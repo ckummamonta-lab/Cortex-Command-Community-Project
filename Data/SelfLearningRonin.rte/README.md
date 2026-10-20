@@ -7,10 +7,10 @@ the AI defends its commander, sends squads out to destroy you, and learns from e
 
 ## Game version
 
-`Index.ini` contains `SupportedGameVersion = 7.0.0-dev`, which is what this repository builds (see `meson.build`).
-The engine refuses mods whose version does not match a development build exactly. If you play a different build,
-change that line to the version shown in the game (for a release build `X.Y.0`, with X the major version and Y the
-lowest minor version the mod needs).
+Made for **Cortex Command Community Project v6.2.x**: `Index.ini` contains `SupportedGameVersion = 6.2.0`
+(X = major version of the game, Y = lowest minor version needed). The engine refuses mods whose version does not fit.
+If you build the development version of the game from source (`meson.build` says `7.0.0-dev`), change that line to
+`SupportedGameVersion = 7.0.0-dev`: development builds need an exact match. The music calls work in both.
 
 ## What the AI learns
 

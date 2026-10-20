@@ -57,6 +57,43 @@ local function Dist(a, b)
 	return SceneMan:ShortestDistance(a, b, false).Magnitude;
 end
 
+-- Music: the 6.x releases play music through AudioMan, the development version through MusicMan.
+local function PlayMusic(mood)
+	if MusicMan then
+		if mood == "defeat" then
+			MusicMan:PlayDynamicSong("Generic Defeat Music", "Default", true);
+			MusicMan:PlayDynamicSong("Generic Ambient Music");
+		elseif mood == "victory" then
+			MusicMan:PlayDynamicSong("Generic Victory Music", "Default", true);
+			MusicMan:PlayDynamicSong("Generic Ambient Music");
+		elseif mood == "battle" then
+			MusicMan:PlayDynamicSong("Generic Battle Music");
+		else
+			MusicMan:PlayDynamicSong("Generic Ambient Music");
+		end
+	elseif AudioMan and mood ~= "battle" then
+		AudioMan:ClearMusicQueue();
+		if mood == "defeat" then
+			AudioMan:PlayMusic("Base.rte/Music/dBSoundworks/udiedfinal.ogg", 2, -1.0);
+			AudioMan:QueueSilence(10);
+			AudioMan:QueueMusicStream("Base.rte/Music/dBSoundworks/ccambient4.ogg");
+		elseif mood == "victory" then
+			AudioMan:PlayMusic("Base.rte/Music/dBSoundworks/uwinfinal.ogg", 2, -1.0);
+			AudioMan:QueueSilence(10);
+			AudioMan:QueueMusicStream("Base.rte/Music/dBSoundworks/ccambient4.ogg");
+		else
+			AudioMan:PlayMusic("Base.rte/Music/dBSoundworks/ccambient4.ogg", -1, -1);
+		end
+	end
+end
+
+-- AddInventoryItem crashes the game when it is handed nil (e.g. a weapon group with no items), so never do that.
+local function AddItem(actor, item)
+	if item then
+		actor:AddInventoryItem(item);
+	end
+end
+
 local function IsCombatant(actor)
 	return actor.ClassName == "AHuman" or actor.ClassName == "ACrab";
 end
@@ -338,10 +375,10 @@ function RoninLearningDefense:SetupHumanPlayerBrains()
 				-- No brain in the scene: switch to editing mode so the player can place one
 				if not foundBrain then
 					self.ActivityState = Activity.EDITING;
-					MusicMan:PlayDynamicSong("Generic Ambient Music");
+					PlayMusic("ambient");
 					self:SetLandingZone(Vector(player * SceneMan.SceneWidth / 4, 0), player);
 				else
-					MusicMan:PlayDynamicSong("Generic Battle Music");
+					PlayMusic("battle");
 					self:SetPlayerBrain(foundBrain, player);
 					self:SwitchToActor(foundBrain, player, self:GetTeamOfPlayer(player));
 					self:SetLandingZone(self:GetPlayerBrain(player).Pos, player);
@@ -354,12 +391,7 @@ end
 
 function RoninLearningDefense:EndActivity()
 	if not self:IsPaused() then
-		if self:HumanBrainCount() == 0 then
-			MusicMan:PlayDynamicSong("Generic Defeat Music", "Default", true);
-		else
-			MusicMan:PlayDynamicSong("Generic Victory Music", "Default", true);
-		end
-		MusicMan:PlayDynamicSong("Generic Ambient Music");
+		PlayMusic(self:HumanBrainCount() == 0 and "defeat" or "victory");
 	end
 	-- If the match ended by quitting, keep what was learned during the sorties
 	if not self.finished then
@@ -587,7 +619,7 @@ function RoninLearningDefense:BuildBase(humanBrains)
 	end
 	local brainPos = Vector(ground.X, ground.Y - 20);
 	self:Equip(brain, "Weapons - Primary");
-	brain:AddInventoryItem(RandomHDFirearm("Weapons - Secondary", self.techID));
+	AddItem(brain, RandomHDFirearm("Weapons - Secondary", self.techID));
 	brain.Team = self.aiTeam;
 	brain.Pos = brainPos;
 	brain.AIMode = Actor.AIMODE_SENTRY;
@@ -638,13 +670,13 @@ function RoninLearningDefense:SpawnUnit(brainPos, payCost)
 	local weapon = Mind.Select(self.ctx, "weapon");
 	weapon = self:Equip(actor, weapon);
 	if math.random() < 0.5 then
-		actor:AddInventoryItem(RandomHDFirearm("Weapons - Secondary", self.techID));
+		AddItem(actor, RandomHDFirearm("Weapons - Secondary", self.techID));
 	end
 	local roll = math.random();
 	if roll < 0.3 then
-		actor:AddInventoryItem(RandomTDExplosive("Bombs - Grenades", self.techID));
+		AddItem(actor, RandomTDExplosive("Bombs - Grenades", self.techID));
 	elseif roll < 0.5 then
-		actor:AddInventoryItem(CreateHDFirearm("Medikit", "Base.rte"));
+		AddItem(actor, CreateHDFirearm("Medikit", "Base.rte"));
 	end
 
 	local post = self:PostPosition(brainPos);
