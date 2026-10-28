@@ -18,5 +18,10 @@
 - Every engine method and property the script uses was looked up in the 6.2.2 Lua bindings by script: all present (only `PlayDynamicSong`, which is skipped when `MusicMan` is absent).
 - Test rig: LuaJIT built from the repo's own sources plus a fake engine and a toy battle; learner unit tests; save/load round trip including a corrupted file.
 
+## Diagnostics added
+- Every important step prints a line starting with `Ronin AI:` to the in-game console (`~`). The console is also dumped into `AbortLog.txt` when the game crashes, so the last `Ronin AI:` line shows how far the mod got.
+- An error inside the AI's once-per-second thinking no longer pauses the whole activity: it is printed (up to 5 times) and then the AI switches itself off while the game keeps running.
+- If Ronin.rte is not loaded the activity says so instead of failing later.
+
 ## Next step
 Waiting for the first real run on 6.2.2: what the AI did, console lines "Ronin AI sortie ...", any error text.

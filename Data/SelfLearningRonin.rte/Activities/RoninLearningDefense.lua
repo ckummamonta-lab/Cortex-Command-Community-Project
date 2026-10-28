@@ -44,6 +44,11 @@ local SQUAD_SIGHT_RADIUS = 450;
 -- Helpers
 ----------------------------------------------------------------------------------------------------------------------
 
+-- Console lines are also dumped into AbortLog.txt when the game crashes, so they show how far the mod got.
+local function Log(text)
+	ConsoleMan:PrintString("Ronin AI: " .. text);
+end
+
 local function Clamp(value, low, high)
 	if value < low then
 		return low;
@@ -294,6 +299,13 @@ end
 
 function RoninLearningDefense:StartActivity(isNewGame)
 	self.techID = PresetMan:GetModuleID(TECH);
+	self.disabled = false;
+	self.errorCount = 0;
+	self.spawnCount = 0;
+	if self.techID < 0 then
+		self.disabled = true;
+		Log("ERROR: Ronin.rte is not loaded, the activity cannot create its soldiers.");
+	end
 
 	-- Find the CPU team, add one if the setup screen did not provide it
 	self.aiTeam = -1;
@@ -346,7 +358,12 @@ function RoninLearningDefense:StartActivity(isNewGame)
 	self.matchDecisions = {};
 	self.lastThinkMS = 0;
 
-	Mind.Load();
+	local loadOk, loadError = pcall(Mind.Load);
+	if not loadOk then
+		Mind.Reset();
+		Log("could not read the memory file, starting with an empty memory: " .. tostring(loadError));
+	end
+	Log(string.format("activity started (new game: %s, AI team %d, memory: %d matches, %d sorties)", tostring(isNewGame), self.aiTeam, Mind.data.matches, Mind.data.sorties));
 
 	if isNewGame then
 		for team = Activity.TEAM_1, Activity.MAXTEAMCOUNT - 1 do
@@ -417,6 +434,9 @@ function RoninLearningDefense:UpdateActivity()
 	end
 
 	local humansAlive, enemyBrainActors = self:UpdateHumans();
+	if self.disabled then
+		return;
+	end
 
 	if not self.startTimer:IsPastSimMS(1500) then
 		if self.startTimer:IsPastSimMS(100) then
@@ -438,7 +458,15 @@ function RoninLearningDefense:UpdateActivity()
 
 	if self.thinkTimer:IsPastSimMS(THINK_INTERVAL_MS) then
 		self.thinkTimer:Reset();
-		self:Think(enemyBrainActors);
+		local ok, err = pcall(self.Think, self, enemyBrainActors);
+		if not ok then
+			self.errorCount = self.errorCount + 1;
+			Log("ERROR while thinking (" .. self.errorCount .. "/5): " .. tostring(err));
+			if self.errorCount >= 5 then
+				self.disabled = true;
+				Log("too many errors, the AI is switched off for the rest of this match. The game itself keeps running.");
+			end
+		end
 	end
 end
 
@@ -611,6 +639,7 @@ function RoninLearningDefense:BuildBase(humanBrains)
 		x = Clamp(x, 200, width - 200);
 	end
 
+	Log(string.format("building the base at x=%d (your brain at x=%d, scene width %d)", x, refX, width));
 	local ground = SceneMan:MovePointToGround(Vector(x, 0), 20, 5);
 	local brain = RandomAHuman("Brains", self.techID);
 	if not brain then
@@ -625,6 +654,7 @@ function RoninLearningDefense:BuildBase(humanBrains)
 	brain.AIMode = Actor.AIMODE_SENTRY;
 	self.aiBrainId = brain.UniqueID;
 	MovableMan:AddActor(brain);
+	Log(string.format("commander placed at %d,%d", brainPos.X, brainPos.Y));
 
 	for i = 1, 4 do
 		self:SpawnUnit(brainPos, false);
@@ -687,6 +717,10 @@ function RoninLearningDefense:SpawnUnit(brainPos, payCost)
 	-- The Lua object stops being valid once it is handed to MovableMan, so grab everything first
 	local id = actor.UniqueID;
 	self.units[id] = {heavy = heavy, weapon = weapon, state = "defender", post = post};
+	self.spawnCount = self.spawnCount + 1;
+	if self.spawnCount <= 6 then
+		Log(string.format("soldier %d (%s, %s) at %d,%d", self.spawnCount, heavy and "heavy" or "light", weapon, post.X, post.Y));
+	end
 	MovableMan:AddActor(actor);
 	if payCost then
 		self.manpower = self.manpower - (heavy and HEAVY_COST or LIGHT_COST);
@@ -939,6 +973,7 @@ function RoninLearningDefense:TryLaunchSortie(aiBrain, mine, enemies, enemyBrain
 	end
 	table.insert(self.squads, squad);
 	self.sortieTimer:Reset();
+	Log(string.format("sortie leaves (%s): %d men, target '%s', retreat at %d%%", ctx, squad.size, targetType, retreat * 100));
 
 	self:Remember(ctx, "target", targetType);
 	self:Remember(ctx, "size", NearestOption("size", squad.size));
