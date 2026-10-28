@@ -1,0 +1,12 @@
+# Cortex Command (CCCP) modding plan
+
+- Install: the player's Windows install of Cortex Command Community Project, v6.2.2 (read from the in-game console). Folder not known yet; the mod goes into `<game folder>/Data/SelfLearningRonin.rte`. Store: not known.
+- Engine: Cortex Command Community Project (open-source C++ engine, source read from tag `v6.2.2` of cortex-command-community/Cortex-Command-Community-Project). Mods are data modules: `.rte` folders with INI definitions plus Lua scripts (LuaJIT through luabind). 64-bit.
+- Anti-cheat / online: none. Single player against the CPU team only; the multiplayer lobby is not used. Verdict: safe to mod.
+- Host / compat: the build sandbox is Linux and cannot run the Windows game, so nothing is verified in the real game from here. Runs natively on the player's Windows PC. Verified by: console text and crash dialog the player sent (version 6.2.2, Windows).
+- Saves: engine userdata modules (`Conquest Saves`, `User Scenes`) are not touched by this mod. The mod's own memory: `Data/SelfLearningRonin.rte/Memory.txt` (plain text, can be deleted to reset).
+- Config / logs: in-game console (`~`); `AbortLog.txt` and `AbortScreen.png` are written into the game folder when the game crashes.
+- Community route: no external loader needed. The game itself loads any `.rte` folder in `Data/` and reads its `Index.ini`. Every non-official module MUST declare `SupportedGameVersion` (for a release: `X.Y.0`, X = game major, Y = lowest minor; a development build needs an exact match such as `7.0.0-dev`). Source of truth for the Lua API: `Source/Lua/LuaBindings*.cpp` and the scripts in `Data/Base.rte/Activities` of the same tag.
+- Chosen route for "a Ronin AI that defends and learns sortie tactics": data module + scripted activity (Lua, `LuaClassName = RoninLearningDefense`). Reason: the engine already exposes everything needed (spawning, AI modes, waypoints, file access for persistence); no engine patching required.
+- Lab plan: the mod is a separate folder that changes no original file, so it can be removed by deleting the folder. Test with a fresh `Memory.txt` (delete it to reset). Windowed mode is optional, the in-game console shows one line per sortie.
+- Unknowns to resolve first: how the mod behaves in the real game on 6.2.2 (the player has not reported yet after the `MusicMan` fix); which scene the player uses (the log showed "Vesod Fortress", not the default Ketanot Hills); whether the earlier crash dialog (access violation) was only a consequence of the failed start.
