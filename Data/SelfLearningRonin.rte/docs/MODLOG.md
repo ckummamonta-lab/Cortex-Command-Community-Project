@@ -9,6 +9,8 @@
 - Lua `AddActor` gives ownership to the engine: read `UniqueID` before calling it and never use the object afterwards.
 - Groups in Ronin.rte (identical in 6.2.2 and 7.0.0-dev): actors `Actors`, `Actors - Light`, `Actors - Heavy`, `Brains`; weapons `Weapons - Primary/Secondary/Light/Heavy/CQB/Explosive/Sniper/Melee`, `Bombs - Grenades`.
 
+- Mod folder: v6.2.2 scans `Mods/` for non-official modules (`System::s_ModDirectory = "Mods/"`, `Data/` holds the official ones). Earlier instructions that said `Data/` were wrong for this version.
+
 ## What failed and why
 1. Mod absent from the activity list: `SupportedGameVersion` was missing from `Index.ini`. Fixed.
 2. "Activity was NOT started due to errors": `attempt to index global 'MusicMan'` (script line 341). Reproduced on the test rig by removing `MusicMan`; fixed with a helper that uses whichever music API exists.

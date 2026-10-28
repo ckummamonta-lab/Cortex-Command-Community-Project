@@ -5,6 +5,17 @@ Adds the **Ronin Learning Defense** activity (pick it in the Activities menu, 1 
 You place your brain, and a Ronin commander appears on the far side of the map with a small garrison. From then on
 the AI defends its commander, sends squads out to destroy you, and learns from every fight.
 
+## Install
+
+1. Download the branch as a ZIP (green **Code** button on GitHub, **Download ZIP**) and open it.
+2. Copy the folder `Data/SelfLearningRonin.rte` out of the ZIP into the **`Mods`** folder next to the game's exe
+   (v6.x releases load mods from `Mods`; if the folder does not exist, start the game once or create it).
+   The result must be `Mods/SelfLearningRonin.rte/Index.ini`, not a folder inside a folder.
+   A development build of the game (7.0.0-dev) loads mods from `Data` instead.
+3. Start the game. If the mod is switched off, enable it in the main menu under **Mod Manager**.
+4. Pick **Ronin Learning Defense** in the activity list. When updating, replace the whole folder but keep your
+   `Memory.txt` if you want to keep what the AI has learned.
+
 ## Game version
 
 Made for **Cortex Command Community Project v6.2.x**: `Index.ini` contains `SupportedGameVersion = 6.2.0`
@@ -35,7 +46,7 @@ The console (`~`) prints one line per sortie so you can watch it learn.
 
 ## Memory
 
-Stored in `SelfLearningRonin.rte/Memory.txt` (plain text, ignored by git). Delete it to reset the AI,
+Stored in `SelfLearningRonin.rte/Memory.txt` inside the mod folder (plain text, ignored by git). Delete it to reset the AI,
 copy it to give the same trained AI to a friend.
 
 The difficulty slider changes the AI's income and how many soldiers it can field.

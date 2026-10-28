@@ -1,6 +1,6 @@
 # Cortex Command (CCCP) modding plan
 
-- Install: the player's Windows install of Cortex Command Community Project, v6.2.2 (read from the in-game console). Folder not known yet; the mod goes into `<game folder>/Data/SelfLearningRonin.rte`. Store: not known.
+- Install: the player's Windows install of Cortex Command Community Project, v6.2.2 (read from the in-game console). Folder not known yet; the mod goes into `<game folder>/Mods/SelfLearningRonin.rte` (v6.x loads mods from `Mods/`, a development build from `Data/`; `System::s_ModDirectory`). Store: not known.
 - Engine: Cortex Command Community Project (open-source C++ engine, source read from tag `v6.2.2` of cortex-command-community/Cortex-Command-Community-Project). Mods are data modules: `.rte` folders with INI definitions plus Lua scripts (LuaJIT through luabind). 64-bit.
 - Anti-cheat / online: none. Single player against the CPU team only; the multiplayer lobby is not used. Verdict: safe to mod.
 - Host / compat: the build sandbox is Linux and cannot run the Windows game, so nothing is verified in the real game from here. Runs natively on the player's Windows PC. Verified by: console text and crash dialog the player sent (version 6.2.2, Windows).
